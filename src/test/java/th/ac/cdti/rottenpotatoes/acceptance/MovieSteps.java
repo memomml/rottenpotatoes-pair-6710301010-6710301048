@@ -24,12 +24,32 @@ public class MovieSteps {
     movies.add(new Movie(title, Rating.fromLabel(label), "", LocalDate.of(year, 1, 1)));
   }
 
+  /** Clears all movies from the in-memory catalog. */
+  @Given("the catalog is empty")
+  public void theCatalogIsEmpty() {
+    movies.clear();
+  }
+
   /** Filters the catalog by the given rating label. */
   @When("I filter movies by rating {string}")
   public void filterMoviesByRating(String label) {
     shown = new MovieCatalog(movies).byRating(Rating.fromLabel(label)).stream()
         .map(Movie::title)
         .toList();
+  }
+
+  /** Asks for every movie, so the limit never hides one. */
+  @When("I sort movies newest first")
+  public void sortMoviesNewestFirst() {
+    shown = new MovieCatalog(movies).newestFirst(movies.size()).stream()
+        .map(Movie::title)
+        .toList();
+  }
+
+  /** Sorts the catalog titles alphabetically. */
+  @When("I sort movies alphabetically")
+  public void sortMoviesAlphabetically() {
+    shown = new MovieCatalog(movies).titlesSorted();
   }
 
   /** Asserts that the given movie title is in the shown list. */
@@ -42,6 +62,12 @@ public class MovieSteps {
   @Then("I should not see {string}")
   public void shouldNotSee(String title) {
     assertThat(shown).doesNotContain(title);
+  }
+
+  /** Asserts that the shown titles match the comma-separated list in exact order. */
+  @Then("I should see the titles {string} in that order")
+  public void shouldSeeTheTitlesInThatOrder(String titles) {
+    assertThat(shown).containsExactly(titles.split(", "));
   }
 
   /** Asserts that no movies are shown. */
